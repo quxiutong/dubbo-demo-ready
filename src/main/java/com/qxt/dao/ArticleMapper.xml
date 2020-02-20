@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.qxt.dao.ArticleMapper" >
+  <resultMap id="BaseResultMap" type="com.qxt.domain.Article" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="title" property="title" jdbcType="VARCHAR" />
+    <result column="picture" property="picture" jdbcType="VARCHAR" />
+    <result column="channel_id" property="channelId" jdbcType="INTEGER" />
+    <result column="category_id" property="categoryId" jdbcType="INTEGER" />
+    <result column="user_id" property="userId" jdbcType="INTEGER" />
+    <result column="hits" property="hits" jdbcType="INTEGER" />
+    <result column="hot" property="hot" jdbcType="INTEGER" />
+    <result column="status" property="status" jdbcType="INTEGER" />
+    <result column="deleted" property="deleted" jdbcType="INTEGER" />
+    <result column="created" property="created" jdbcType="TIMESTAMP" />
+    <result column="updated" property="updated" jdbcType="TIMESTAMP" />
+    <result column="content_type" property="contentType" jdbcType="INTEGER" />
+    <result column="keywords" property="keywords" jdbcType="VARCHAR" />
+    <result column="original" property="original" jdbcType="VARCHAR" />
+ <result column="complain_num" property="complain_num" jdbcType="INTEGER" />   
+ 
+  
+    <!-- 封装单个对象. user -->
+    <association property="user" select="com.qxt.dao.UserMapper.selectByPrimaryKey" column="user_id"></association>
+    <association property="channel" select="com.qxt.dao.ChannelMapper.selectByPrimaryKey" column="channel_id"></association>
+    <association property="category" select="com.qxt.dao.CategoryMapper.selectByPrimaryKey" column="category_id"></association>
+
+ 
+  </resultMap>
+  <resultMap id="ResultMapWithBLOBs" type="com.qxt.domain.ArticleWithBLOBs" extends="BaseResultMap" >
+    <result column="content" property="content" jdbcType="LONGVARCHAR" />
+    <result column="summary" property="summary" jdbcType="LONGVARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, title, picture, channel_id, category_id, user_id, hits, hot, status, deleted, 
+    created, updated, content_type, keywords, original,complain_num
+  </sql>
+  <sql id="Blob_Column_List" >
+    content, summary
+  </sql>
+  
+  
+  
+<select id="selects" resultMap="BaseResultMap">
+   
+  select <include refid="Base_Column_List"/> from cms_article
+    <where>
+     <!-- 按照标题查询 -->
+     <if test="title!=null and title!=''">
+      title like "%" #{title} "%"
+     </if>
+    
+      <!-- 文章状态 -->
+     <if test="status!=null and status!=99">
+      and  status =#{status}
+     </if>
+     
+    <if test="channelId!=null">
+      and  channel_Id =#{channelId}
+     </if>
+    
+     <if test="categoryId!=null">
+      and  category_id =#{categoryId}
+     </if>
+    
+     <if test="hot!=null">
+      and  hot =#{hot}
+     </if>
+       <if test="userId!=null">
+      and  user_id =#{userId}
+     </if>
+     
+      <if test="status!=null">
+      and  status =#{status}
+     </if>
+    </where>
+    <!-- 按照文章的修改时间.倒序 -->
+    order by updated desc
+  
+  </select>
+     <select id="list" resultMap="BaseResultMap">
+   
+  select <include refid="Base_Column_List"/> from cms_article
+    <where>
+    <if test="start != null and start != ''">
+  	and created >= #{start}
+  	</if>
+  	<if test="end != null and end != ''">
+  		and created &lt;= #{end}
+  	</if>
+
+    </where>
+    	order by created
+          <if test="flag !=null and flag !=''">
+           ${flag}
+          </if>
+
+  
+  </select>
+  <select id="all" resultType="article">
+  	select * from cms_article
+  </select>
+  <select id="selectByPrimaryKey" resultMap="ResultMapWithBLOBs" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from cms_article
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  
+</mapper>
